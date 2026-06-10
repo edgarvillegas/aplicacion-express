@@ -42,6 +42,54 @@ app.post('/insert', async (c) => {
     }
 })
 
+//endpoint agrega_todo
+
+app.post('/agrega_todo', async (c) => {
+    let body
+
+    try {
+        body = await c.req.json()
+    } catch {
+        return c.json({ error: 'Falta información necesaria' }, 400)
+    }
+
+    const { todo } = body
+
+    if (!todo) {
+        return c.json({ error: 'Falta información necesaria' }, 400)
+    }
+
+    try {
+        const stmt = db.prepare('INSERT INTO todos (todo) VALUES (?)')
+        const result = stmt.run(todo)
+
+        return c.json(
+            {
+                id: Number(result.lastInsertRowid),
+                message: 'Todo agregado correctamente'
+            },
+            201
+        )
+    } catch (err) {
+        return c.json({ error: err.message }, 500)
+    }
+})
+
+//endpoint SELECT
+app.get('/todos', (c) => {
+    try {
+        const todos = db.query(
+            'SELECT * FROM todos'
+        ).all()
+        return c.json(todos)
+    } catch (err) {
+        return c.json(
+            { error: err.message },
+            500
+        )
+    }
+})
+
 export { app, db }
 
 export default {
